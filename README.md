@@ -1,7 +1,11 @@
-# whopper
+# Whopper
 A simple file archive format written in C
 
-To compile simple run `make`
+To create the program use `make exe`
+
+To create a static library use `make lib-static`
+
+To create a shared library use `make lib-shared`
 
 Usage:
     whopper --zip dir-to-archive filename
