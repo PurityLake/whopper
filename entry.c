@@ -8,7 +8,7 @@ int max(int a, int b) { return a > b ? a : b; }
 
 entry_header *create_header(int namesize, int filesize, char *name, int isdir) {
     entry_header *header = (entry_header *)malloc(sizeof(entry_header));
-    header->namesize = namesize;
+    header->namesize = namesize + 1;
     header->filesize = filesize;
     header->isdir = isdir;
     header->name = (char *)malloc(namesize + 1);

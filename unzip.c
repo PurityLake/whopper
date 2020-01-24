@@ -1,3 +1,4 @@
+#include <errno.h>
 #include "unzip.h"
 
 #ifdef __cplusplus
@@ -9,7 +10,7 @@ int unzip(char *file_to_decompress, char *where) {
     if (f) {
         entry_header entry;
         fread(&entry, sizeof(entry_header), 1, f);
-        int len = entry.namesize + 1;
+        int len = entry.namesize;
         int first = 1;
         int oldSize = entry.namesize;
         
@@ -20,11 +21,12 @@ int unzip(char *file_to_decompress, char *where) {
         while(1) {
             if (name != NULL) {
                 if (!first) {
-                    char buf[100];
-                    memset(buf, '\0', 100);
+                    size_t buf_size = strlen(where) + strlen(name + len);
+                    char *buf = (char *)malloc(buf_size);
+                    memset(buf, '\0', buf_size);
                     sprintf(buf, "%s/%s", where, name + len);
                     if (entry.isdir) {
-                        mkdir(buf, 0777);
+                        mkdir(buf, 0700);
                     } else {
                         FILE *write_to = fopen(buf, "w");
                         if (write_to) {
@@ -34,8 +36,9 @@ int unzip(char *file_to_decompress, char *where) {
                             fclose(write_to);
                         }
                     }
+                    free(buf);
                 } else {
-                    mkdir(where, 0777);
+                    mkdir(where, 0700);
                     first = 0;
                 }
                 if (!feof(f)) {

@@ -4,6 +4,8 @@
 extern "C" {
 #endif
 
+#include <sys/stat.h>
+
 int _get_file_size(char *filename) {
     FILE *f = fopen(filename, "r");
     if (f) {
@@ -16,11 +18,12 @@ int _get_file_size(char *filename) {
 }
 
 int _recurse_read_dir(entry_array *arr, char *name, int iterations) {
-    char buf[100];
+    static int curr_buf_size = 128;
+    char *buf = (char *)malloc(curr_buf_size);
     DIR *dir = opendir(name);
     dirent entry;
     int iters = iterations;
-    memset(buf, '\0', 100);
+    memset(buf, '\0', curr_buf_size);
 
     if (dir) {
         **arr = create_header(strlen(name), 0, name, 1);
@@ -28,9 +31,17 @@ int _recurse_read_dir(entry_array *arr, char *name, int iterations) {
         ++iters;
         readdir(dir); readdir(dir);
         while ((entry = readdir(dir)) != NULL) {
+            size_t buf_len = strlen(buf);
+            size_t entry_len = strlen(entry->d_name);
+            printf("%s\n", name);
+            if (buf_len + entry_len + 1 > curr_buf_size) {
+                curr_buf_size += strlen(entry->d_name) + 50;
+                buf = (char *)realloc(buf, curr_buf_size);
+                memset(buf, '\0', curr_buf_size);
+            }
             sprintf(buf, "%s/%s", name, entry->d_name);
             iters += _recurse_read_dir(arr, buf, 0);
-            memset(buf, '\0', 100);
+            memset(buf, '\0', curr_buf_size);
         }
         closedir(dir);
     } else {
@@ -39,6 +50,7 @@ int _recurse_read_dir(entry_array *arr, char *name, int iterations) {
         ++(*arr);
         ++iters;
     }
+    free(buf);
     return iters;
 }
 
