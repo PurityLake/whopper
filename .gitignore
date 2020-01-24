@@ -1,5 +1,6 @@
 whopper
 *.whop
+bin/
 
 # Prerequisites
 *.d

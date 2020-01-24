@@ -1,5 +1,4 @@
-#include "zip.h"
-#include "unzip.h"
+#include "whopper.h"
 
 int main(int argc, char **argv) {
     if (argc > 1) {
