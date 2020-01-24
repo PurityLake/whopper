@@ -1,4 +1,4 @@
-#include "entry.h"
+#include "whopper/entry.h"
 
 #ifdef __cplusplus
 extern "C" {

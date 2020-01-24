@@ -1,4 +1,4 @@
-#include "zip.h"
+#include "whopper/zip.h"
 
 #ifdef __cplusplus
 extern "C" {
