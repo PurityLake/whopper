@@ -17,27 +17,39 @@ entry_header *create_header(int namesize, int filesize, char *name, int isdir) {
     return header;
 }
 
-void free_header(entry_header **header) {
-    free((*header)->name);
-    free(*header);
+void free_header(entry_header *header) {
+    free(header->name);
+    free(header);
 }
 
 
-entry_array create_entry_arr(size_t len) {
-    entry_array arr = (entry_array)malloc(sizeof(entry_header*) * len);
-    for (int i = 0; i < len; ++i) {
-        arr[i] = NULL;
-    } 
-    return arr;
+entry_array *create_entry_arr() {
+    entry_array *ret = (entry_array *)malloc(sizeof(entry_array));
+    ret->value = NULL;
+    ret->next = NULL;
+    return ret;
+}
+void add_to_entry_array(entry_array *dest, entry_header *value) {
+    if (dest->value == NULL) {
+        dest->value = value;
+    } else if (dest->next == NULL) {
+        dest->next = create_entry_arr();
+        add_to_entry_array(dest->next, value);
+    } else {
+        add_to_entry_array(dest->next, value);
+    }
 }
 
 void free_entry_arr(entry_array *arr) {
-    entry_array a = *arr;
-    while((*a) != NULL) {
-        free_header(a);
-        ++a;
+    if (arr->next == NULL) {
+        free_header(arr->value);
+        free(arr);
+    } else {
+        free_entry_arr(arr->next);
+        free(arr);
     }
 }
+
 #ifdef __cplusplus
 }
 #endif

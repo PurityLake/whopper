@@ -4,8 +4,6 @@
 extern "C" {
 #endif
 
-#include <sys/stat.h>
-
 int _get_file_size(char *filename) {
     FILE *f = fopen(filename, "r");
     if (f) {
@@ -17,48 +15,41 @@ int _get_file_size(char *filename) {
     return -1;
 }
 
-int _recurse_read_dir(entry_array *arr, char *name, int iterations) {
+void _recurse_read_dir(entry_array *arr, char *name) {
     static int curr_buf_size = 128;
     char *buf = (char *)malloc(curr_buf_size);
     DIR *dir = opendir(name);
     dirent entry;
-    int iters = iterations;
     memset(buf, '\0', curr_buf_size);
 
     if (dir) {
-        **arr = create_header(strlen(name), 0, name, 1);
-        ++(*arr);
-        ++iters;
+        add_to_entry_array(arr, create_header(strlen(name), 0, name, 1));
         readdir(dir); readdir(dir);
         while ((entry = readdir(dir)) != NULL) {
             size_t buf_len = strlen(buf);
             size_t entry_len = strlen(entry->d_name);
-            printf("%s\n", name);
             if (buf_len + entry_len + 1 > curr_buf_size) {
                 curr_buf_size += strlen(entry->d_name) + 50;
                 buf = (char *)realloc(buf, curr_buf_size);
                 memset(buf, '\0', curr_buf_size);
             }
             sprintf(buf, "%s/%s", name, entry->d_name);
-            iters += _recurse_read_dir(arr, buf, 0);
+            _recurse_read_dir(arr, buf);
             memset(buf, '\0', curr_buf_size);
         }
         closedir(dir);
     } else {
         int i = _get_file_size(name);
-        **arr = create_header(strlen(name), i, name, 0);
-        ++(*arr);
-        ++iters;
+        add_to_entry_array(arr, create_header(strlen(name), i, name, 0));
     }
     free(buf);
-    return iters;
 }
 
 int _recurse_write(entry_array *arr, FILE *f) {
-    fwrite((**arr), sizeof(entry_header), 1, f);
-    fwrite((**arr)->name, (**arr)->namesize, 1, f);
-    if ((**arr)->isdir == 0) {
-        FILE *file_to_write = fopen((**arr)->name, "r");
+    fwrite(arr->value, sizeof(entry_header), 1, f);
+    fwrite(arr->value->name, arr->value->namesize, 1, f);
+    if (arr->value->isdir == 0) {
+        FILE *file_to_write = fopen(arr->value->name, "r");
         if (file_to_write) {
             char c = fgetc(file_to_write);
             while (!feof(file_to_write)) {
@@ -68,23 +59,18 @@ int _recurse_write(entry_array *arr, FILE *f) {
             fclose(file_to_write);
         }
     }
-    ++(*arr);
-    if (**arr != NULL) {
-        _recurse_write(arr, f);
+    if (arr->next != NULL) {
+        _recurse_write(arr->next, f);
     }
     return 1;
 }
 
 int zip(char *dir_to_compress, char *filename) {
-    entry_array arr = create_entry_arr(MAX_ENTRY_COUNT);
-    int i = _recurse_read_dir(&arr, dir_to_compress, 0);
-    int idx = i;
-    while (i > 0) { --arr; --i; }
+    entry_array *arr = create_entry_arr();
+    _recurse_read_dir(arr, dir_to_compress);
     FILE *out = fopen(filename, "w");
-    _recurse_write(&arr, out);
-    i = idx;
-    while (i > 0) { --arr; --i; }
-    free_entry_arr(&arr);
+    _recurse_write(arr, out);
+    free_entry_arr(arr);
     return 1;
 }
 
