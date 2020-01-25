@@ -1,6 +1,7 @@
 whopper
 *.whop
 bin/
+infer-out
 
 # Prerequisites
 *.d

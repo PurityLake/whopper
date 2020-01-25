@@ -18,31 +18,41 @@ int _get_file_size(char *filename) {
 void _recurse_read_dir(entry_array *arr, char *name) {
     static int curr_buf_size = 128;
     char *buf = (char *)malloc(curr_buf_size);
-    DIR *dir = opendir(name);
-    dirent entry;
-    memset(buf, '\0', curr_buf_size);
+    if (buf != NULL) {
+        DIR *dir = opendir(name);
+        dirent entry;
+        memset(buf, '\0', curr_buf_size);
 
-    if (dir) {
-        add_to_entry_array(arr, create_header(strlen(name), 0, name, 1));
-        readdir(dir); readdir(dir);
-        while ((entry = readdir(dir)) != NULL) {
-            size_t buf_len = strlen(buf);
-            size_t entry_len = strlen(entry->d_name);
-            if (buf_len + entry_len + 1 > curr_buf_size) {
-                curr_buf_size += strlen(entry->d_name) + 50;
-                buf = (char *)realloc(buf, curr_buf_size);
+        if (dir) {
+            add_to_entry_array(arr, strlen(name), 0, name, 1);
+            readdir(dir); readdir(dir);
+            while ((entry = readdir(dir)) != NULL) {
+                size_t buf_len = strlen(buf);
+                size_t entry_len = strlen(entry->d_name);
+                if (buf_len + entry_len + 1 > curr_buf_size) {
+                    curr_buf_size += strlen(entry->d_name) + 50;
+                    buf = (char *)realloc(buf, curr_buf_size);
+                    if (buf != NULL) {
+                        memset(buf, '\0', curr_buf_size);
+                    } else {
+                        fprintf(stderr, "Unable to create memory of size %d\n", curr_buf_size);
+                        exit(EXIT_FAILURE);
+                    }
+                }
+                sprintf(buf, "%s/%s", name, entry->d_name);
+                _recurse_read_dir(arr, buf);
                 memset(buf, '\0', curr_buf_size);
             }
-            sprintf(buf, "%s/%s", name, entry->d_name);
-            _recurse_read_dir(arr, buf);
-            memset(buf, '\0', curr_buf_size);
+            closedir(dir);
+        } else {
+            int i = _get_file_size(name);
+            add_to_entry_array(arr, strlen(name), i, name, 0);
         }
-        closedir(dir);
+        free(buf);
     } else {
-        int i = _get_file_size(name);
-        add_to_entry_array(arr, create_header(strlen(name), i, name, 0));
+        fprintf(stderr, "Unable to create memory of size %d\n",  curr_buf_size);
+        exit(EXIT_FAILURE);
     }
-    free(buf);
 }
 
 int _recurse_write(entry_array *arr, FILE *f) {
@@ -71,6 +81,7 @@ int zip(char *dir_to_compress, char *filename) {
     FILE *out = fopen(filename, "w");
     _recurse_write(arr, out);
     free_entry_arr(arr);
+    fclose(out);
     return 1;
 }
 

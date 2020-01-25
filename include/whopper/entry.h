@@ -28,7 +28,7 @@ typedef struct _entry_array{
 extern entry_header *create_header(int namesize, int filesize, char *name, int isdir);
 extern void free_header(entry_header *header);
 extern entry_array *create_entry_arr();
-extern void add_to_entry_array(entry_array *dest, entry_header *value);
+extern void add_to_entry_array(entry_array *dest,  int namesize, int filesize, char *name, int isdir);
 extern void free_entry_arr(entry_array *arr);
 
 #ifdef __cplusplus

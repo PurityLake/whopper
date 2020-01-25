@@ -30,3 +30,4 @@ clean:
 	rm -f *.o
 	rm -f $(EXECUTABLE)
 	rm -f *.whop
+	rm -rf infer-out
