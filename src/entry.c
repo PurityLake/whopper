@@ -6,7 +6,7 @@ extern "C" {
 
 int max(int a, int b) { return a > b ? a : b; }
 
-entry_header *create_header(int namesize, int filesize, char *name, int isdir) {
+entry_header *create_header(int namesize, int filesize, char *name, int8_t isdir) {
     entry_header *header = (entry_header *)malloc(sizeof(entry_header));
     if (header != NULL) {
         header->namesize = namesize + 1;
@@ -22,7 +22,7 @@ entry_header *create_header(int namesize, int filesize, char *name, int isdir) {
             exit(EXIT_FAILURE);
         }
     } else {
-        fprintf(stderr, "Unable to create memory of size %d bytes\n", sizeof(entry_header));
+        fprintf(stderr, "Unable to create memory of size %lu bytes\n", sizeof(entry_header));
         exit(EXIT_FAILURE);
     }
     return header;
@@ -40,13 +40,13 @@ entry_array *create_entry_arr() {
         ret->value = NULL;
         ret->next = NULL;
     } else {
-        fprintf(stderr, "Unable to create memory of size %d bytes\n", sizeof(entry_array));
+        fprintf(stderr, "Unable to create memory of size %lu bytes\n", sizeof(entry_array));
         exit(EXIT_FAILURE);
     }
     return ret;
 }
 
-void add_to_entry_array(entry_array *dest, int namesize, int filesize, char *name, int isdir) {
+void add_to_entry_array(entry_array *dest, int namesize, int filesize, char *name, int8_t isdir) {
     if (dest->value == NULL) {
         dest->value = create_header(namesize, filesize, name, isdir);
     } else if (dest->next == NULL) {

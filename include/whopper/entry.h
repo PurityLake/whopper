@@ -16,7 +16,8 @@ typedef struct dirent* dirent;
 #endif
 
 typedef struct {
-    int namesize, filesize, isdir;
+    int namesize, filesize;
+    int8_t isdir;
     char *name;
 } entry_header;
 
@@ -25,10 +26,10 @@ typedef struct _entry_array{
     struct _entry_array *next;
 } entry_array;
 
-extern entry_header *create_header(int namesize, int filesize, char *name, int isdir);
+extern entry_header *create_header(int namesize, int filesize, char *name, int8_t isdir);
 extern void free_header(entry_header *header);
 extern entry_array *create_entry_arr();
-extern void add_to_entry_array(entry_array *dest,  int namesize, int filesize, char *name, int isdir);
+extern void add_to_entry_array(entry_array *dest,  int namesize, int filesize, char *name, int8_t isdir);
 extern void free_entry_arr(entry_array *arr);
 
 #ifdef __cplusplus
