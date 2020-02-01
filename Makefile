@@ -27,6 +27,4 @@ static: $(OBJS)
 clean:
 	rm -rf bin
 	rm -f *.o
-	rm -f $(EXECUTABLE)
-	rm -f *.whop
 	rm -rf infer-out
