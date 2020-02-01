@@ -1,28 +1,27 @@
 CC=gcc
 CFLAGS=-Wall -pedantic -std=c11
-EXECUTABLE=./bin/whopper
+OUTDIR=./bin
+EXECUTABLE=$(OUTDIR)/whopper
 SRC_DIR=./src
-LIB_FILE=./bin/libwhopper.a
-SHARED_LIB_FILE=./bin/libwhopper.so
+STATIC_LIB_FILE=$(OUTDIR)/libwhopper.a
+SHARED_LIB_FILE=$(OUTDIR)/libwhopper.so
 INCLUDE=-I./include
+OBJS=entry.o unzip.o zip.o
 
-exe:
-	mkdir -p bin
-	$(CC) $(CFLAGS) -o $(EXECUTABLE) $(SRC_DIR)/*.c main.c $(INCLUDE)
+%.o: $(SRC_DIR)/%.c
+	$(CC) $(CFLAGS) -o $@ -c $< $(INCLUDE)
 
-lib-shared:
-	mkdir -p bin
-	$(CC) $(CFLAGS) -o entry.o -c $(SRC_DIR)/entry.c $(INCLUDE)
-	$(CC) $(CFLAGS) -o zip.o -c $(SRC_DIR)/zip.c $(INCLUDE)
-	$(CC) $(CFLAGS) -o unzip.o -c $(SRC_DIR)/unzip.c $(INCLUDE)
+exe: $(OBJS) main.o
+	mkdir -p $(OUTDIR)
+	$(CC) $(CFLAGS) -o $(EXECUTABLE) $^ $(INCLUDE)
+
+shared: $(OBJS)
+	mkdir -p $(OUTDIR)
 	$(CC) -shared -o $(SHARED_LIB_FILE) *.o
 
-lib-static:
-	mkdir -p bin
-	$(CC) $(CFLAGS) -o entry.o -c $(SRC_DIR)/entry.c $(INCLUDE)
-	$(CC) $(CFLAGS) -o zip.o -c $(SRC_DIR)/zip.c $(INCLUDE)
-	$(CC) $(CFLAGS) -o unzip.o -c $(SRC_DIR)/unzip.c $(INCLUDE)
-	ar rcs $(LIB_FILE) entry.o zip.o unzip.o
+static: $(OBJS)
+	mkdir -p $(OUTDIR)
+	ar rcs $(STATIC_LIB_FILE) entry.o zip.o unzip.o
 
 .PHONY: clean
 clean:

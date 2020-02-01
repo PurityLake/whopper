@@ -3,9 +3,9 @@ A simple file archive format written in C
 
 To create the program use `make exe`
 
-To create a static library use `make lib-static`
+To create a static library use `make static`
 
-To create a shared library use `make lib-shared`
+To create a shared library use `make shared`
 
 Usage:
 
